@@ -1,0 +1,25 @@
+# UI
+customtkinter
+pillow
+
+# Voice
+pyttsx3
+SpeechRecognition
+pyaudio
+
+# Features
+wikipedia
+pywhatkit
+pyautogui
+opencv-python
+requests
+beautifulsoup4
+plyer
+pygame
+speedtest-cli
+playsound==1.2.2
+googletrans==4.0.0rc1
+gTTS
+pynput
+matplotlib
+pytz
