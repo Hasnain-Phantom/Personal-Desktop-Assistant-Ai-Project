@@ -8,7 +8,7 @@ The assistant now has a modern graphical interface (`app.py`) built with
 original terminal version (`Personal Desktop Assistant.py`).
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-desktop.txt
 python app.py
 ```
 
@@ -30,3 +30,19 @@ feature needs it.
 | `assistant_core.py` | All command logic, shared by the UI and terminal version |
 | `Personal Desktop Assistant.py` | Original terminal-only assistant |
 | `Dictapp.py`, `SearchNow.py`, `Translator.py`, `alarm.py`, `FocusMode.py`, `FocusGraph.py`, `keyboard.py` | Feature helpers |
+
+## Web version (Vercel)
+
+A browser version lives in `index.html` + `api/chat.py` and deploys to
+[Vercel](https://vercel.com) with no configuration: import the repo, keep the
+root directory as `/`, and deploy. The Python function uses only the standard
+library, so nothing needs installing on the server.
+
+It supports the commands that make sense without a desktop: time/date,
+Wikipedia, Google/YouTube search, notes (`remember that ...`), tasks
+(`add task ...`, `show my schedule`) and small talk. Notes and tasks are kept in
+your browser's local storage; the 🎤 button uses the browser's speech
+recognition (Chrome/Edge) and replies are read aloud with speech synthesis.
+
+Desktop-only features (opening apps, screenshots, camera, volume, focus mode,
+alarms, WhatsApp) are only available in the desktop app above.

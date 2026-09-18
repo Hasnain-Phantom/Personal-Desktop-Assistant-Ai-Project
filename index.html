@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarvis Assistant</title>
+<meta name="description" content="Web version of the Personal Desktop Assistant.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F1F5F9; --panel: #FFFFFF; --sidebar: #F8FAFC; --border: #E2E8F0;
+    --text: #0F172A; --muted: #64748B; --accent: #3B82F6; --accent-hover: #2563EB;
+    --user: #DBEAFE; --bot: #F1F5F9; --chip: #E2E8F0; --chip-hover: #CBD5E1; --ok: #22C55E; --warn: #F59E0B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0B1220; --panel: #0F172A; --sidebar: #111827; --border: #1F2937;
+      --text: #F9FAFB; --muted: #9CA3AF; --user: #1E3A8A; --bot: #1F2937; --chip: #1F2937; --chip-hover: #374151;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B1220; --panel: #0F172A; --sidebar: #111827; --border: #1F2937;
+    --text: #F9FAFB; --muted: #9CA3AF; --user: #1E3A8A; --bot: #1F2937; --chip: #1F2937; --chip-hover: #374151;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, "Segoe UI", system-ui, sans-serif; }
+  .app { display: grid; grid-template-columns: 250px 1fr; height: 100vh; height: 100dvh; }
+
+  aside { background: var(--sidebar); border-right: 1px solid var(--border); padding: 22px 16px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); color: #fff; font-weight: 700; font-size: 22px; display: grid; place-items: center; }
+  .brand h1 { margin: 0; font-size: 18px; }
+  .brand small { color: var(--muted); font-size: 12px; }
+  .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+  .dot.busy { background: var(--warn); }
+  h2 { margin: 6px 0 0; font-size: 11px; letter-spacing: .08em; color: var(--muted); }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; overflow-y: auto; padding-right: 4px; flex: 1; }
+  .chip { background: var(--chip); color: var(--text); border: 0; border-radius: 8px; padding: 9px 6px; font: 500 12px Inter, sans-serif; cursor: pointer; }
+  .chip:hover { background: var(--chip-hover); }
+  .toggles { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+  .toggles label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .toggles input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+
+  main { display: flex; flex-direction: column; padding: 22px 28px; gap: 12px; min-width: 0; }
+  header { display: flex; justify-content: space-between; align-items: baseline; }
+  header h3 { margin: 0; font-size: 24px; }
+  header span { color: var(--muted); font-size: 14px; }
+  .chat { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 70%; display: flex; flex-direction: column; gap: 4px; }
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg .meta { font-size: 10px; color: var(--muted); padding: 0 6px; }
+  .msg .bubble { padding: 10px 14px; border-radius: 14px; background: var(--bot); font-size: 14px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+  .msg.user .bubble { background: var(--user); }
+  .bubble a { color: var(--accent); }
+  form { display: flex; gap: 10px; }
+  #input { flex: 1; height: 46px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--text); padding: 0 14px; font: 14px Inter, sans-serif; outline: none; }
+  #input:focus { border-color: var(--accent); }
+  button.primary { height: 46px; padding: 0 24px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; font: 600 14px Inter, sans-serif; cursor: pointer; }
+  button.primary:hover { background: var(--accent-hover); }
+  button.primary:disabled { opacity: .6; cursor: default; }
+  button.mic { width: 56px; height: 46px; border: 0; border-radius: 12px; background: var(--chip); font-size: 18px; cursor: pointer; }
+  button.mic.on { background: var(--accent); }
+
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--border); padding: 14px 16px; }
+    .actions { grid-template-columns: repeat(3, 1fr); max-height: 120px; }
+    main { padding: 14px 16px; }
+    .msg { max-width: 88%; }
+    header h3 { font-size: 20px; }
+    .toggles { flex-direction: row; gap: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <div class="logo">J</div>
+      <div><h1>JARVIS</h1><small>Desktop Assistant · Web</small></div>
+    </div>
+    <div class="status"><span class="dot" id="dot"></span><span id="status">Ready</span></div>
+    <h2>QUICK ACTIONS</h2>
+    <div class="actions" id="actions"></div>
+    <div class="toggles">
+      <label><input type="checkbox" id="voice" checked> Voice replies</label>
+      <label><input type="checkbox" id="dark"> Dark mode</label>
+    </div>
+  </aside>
+  <main>
+    <header><h3 id="greet"></h3><span id="clock"></span></header>
+    <div class="chat" id="chat"></div>
+    <form id="form">
+      <input id="input" autocomplete="off" placeholder="Type a command, e.g. 'the time' or 'search wikipedia for python'">
+      <button class="primary" id="send" type="submit">Send</button>
+      <button class="mic" id="mic" type="button" title="Speak a command">🎤</button>
+    </form>
+  </main>
+</div>
+
+<script>
+const QUICK = [
+  ["the time", "Time"], ["the date", "Date"], ["open youtube", "YouTube"], ["open google", "Google"],
+  ["search wikipedia for ", "Wikipedia"], ["search on youtube ", "Play on YT"], ["search on google ", "Google it"],
+  ["remember that ", "Remember"], ["what do you remember", "Recall"], ["add task ", "Add task"],
+  ["show my schedule", "Schedule"], ["clear tasks", "Clear tasks"], ["hello", "Hello"], ["help", "Help"],
+];
+const HELP = `Here's what I can do:
+•  the time / the date
+•  open youtube / open google
+•  search wikipedia for <topic>
+•  search on youtube <term>  ·  search on google <term>
+•  remember that <note>  ·  what do you remember  ·  forget everything
+•  add task <task>  ·  show my schedule  ·  clear tasks
+•  hello, how are you, thank you, i am tired`;
+
+const $ = id => document.getElementById(id);
+const chat = $("chat"), input = $("input"), send = $("send"), mic = $("mic");
+let busy = false;
+
+// ---------- helpers
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const greeting = () => { const h = new Date().getHours(); return h < 12 ? "Good Morning!" : h < 17 ? "Good Afternoon!" : h < 20 ? "Good Evening!" : "Good Night!"; };
+function setStatus(t, isBusy) { $("status").textContent = t; $("dot").classList.toggle("busy", !!isBusy); }
+function tick() {
+  $("clock").textContent = new Date().toLocaleString("en-GB", { weekday: "long", day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  $("greet").textContent = greeting();
+}
+function bubble(text, who, url) {
+  const m = document.createElement("div"); m.className = "msg " + who;
+  const meta = document.createElement("div"); meta.className = "meta";
+  meta.textContent = (who === "user" ? "You" : "Jarvis") + "  ·  " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  const b = document.createElement("div"); b.className = "bubble"; b.textContent = text;
+  if (url) { const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "  Open ↗"; b.appendChild(a); }
+  m.append(meta, b); chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
+}
+function say(text, url) {
+  bubble(text, "bot", url);
+  if ($("voice").checked && "speechSynthesis" in window) {
+    speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  }
+}
+
+// ---------- local (browser-side) commands: notes & tasks live in localStorage
+function local(q) {
+  if (q === "help" || q === "?") return say(HELP);
+  if (q.startsWith("remember that")) {
+    const note = q.replace("remember that", "").replace("jarvis", "").trim();
+    if (!note) return say("What should I remember?");
+    save("notes", [...load("notes", []), note]); return say("You told me to " + note);
+  }
+  if (q.includes("what do you remember")) {
+    const n = load("notes", []); return say(n.length ? "You told me to:\n" + n.map(x => "•  " + x).join("\n") : "You haven't told me anything to remember yet.");
+  }
+  if (q.includes("forget everything")) { save("notes", []); return say("Done, I've forgotten everything."); }
+  if (q.startsWith("add task")) {
+    const t = q.replace("add task", "").trim(); if (!t) return say("What's the task?");
+    const tasks = [...load("tasks", []), t]; save("tasks", tasks); return say(`Added task ${tasks.length}: ${t}`);
+  }
+  if (q.includes("show my schedule")) {
+    const t = load("tasks", []); return say(t.length ? "Here is your schedule:\n" + t.map((x, i) => `${i + 1}. ${x}`).join("\n") : "You have no tasks saved. Say 'add task <task>' to add one.");
+  }
+  if (q.includes("clear tasks")) { save("tasks", []); return say("All tasks cleared."); }
+  return false;
+}
+
+// ---------- remote commands go to the Python API
+async function run(text) {
+  const q = text.toLowerCase().trim(); if (!q || busy) return;
+  bubble(text, "user");
+  if (local(q) !== false) return;
+  busy = true; send.disabled = true; setStatus("Working...", true);
+  try {
+    const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: q, tz: -new Date().getTimezoneOffset() }) });
+    const data = await r.json();
+    say(data.reply, data.url);
+    if (data.url) window.open(data.url, "_blank", "noopener");
+  } catch (e) {
+    say("I couldn't reach the server. Are you running this on Vercel (or `vercel dev` locally)?");
+  } finally { busy = false; send.disabled = false; setStatus("Ready"); }
+}
+
+// ---------- wiring
+$("form").addEventListener("submit", e => { e.preventDefault(); const t = input.value; input.value = ""; run(t); });
+QUICK.forEach(([cmd, label]) => {
+  const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = label;
+  b.onclick = () => { if (cmd.endsWith(" ")) { input.value = cmd; input.focus(); } else run(cmd); };
+  $("actions").appendChild(b);
+});
+$("dark").checked = matchMedia("(prefers-color-scheme: dark)").matches;
+$("dark").onchange = e => document.documentElement.dataset.theme = e.target.checked ? "dark" : "light";
+if (!("speechSynthesis" in window)) { $("voice").checked = false; $("voice").disabled = true; }
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SR) { mic.disabled = true; mic.title = "Voice input needs Chrome or Edge"; }
+else {
+  const rec = new SR(); rec.lang = "en-IN"; rec.interimResults = false;
+  rec.onstart = () => { mic.classList.add("on"); setStatus("Listening...", true); };
+  rec.onend = () => { mic.classList.remove("on"); if (!busy) setStatus("Ready"); };
+  rec.onerror = () => setStatus("Couldn't understand");
+  rec.onresult = e => run(e.results[0][0].transcript);
+  mic.onclick = () => { try { rec.start(); } catch {} };
+}
+
+tick(); setInterval(tick, 1000);
+say(greeting() + " Welcome back. I am your personal desktop assistant. How may I help you?");
+input.focus();
+</script>
+</body>
+</html>

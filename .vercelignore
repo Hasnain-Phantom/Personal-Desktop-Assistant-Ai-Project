@@ -1,0 +1,15 @@
+*.ipynb
+*.csv
+*.jpg
+*.txt
+__pycache__
+Personal Desktop Assistant.py
+app.py
+assistant_core.py
+Dictapp.py
+SearchNow.py
+Translator.py
+alarm.py
+FocusMode.py
+FocusGraph.py
+keyboard.py
